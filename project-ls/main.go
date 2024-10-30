@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -17,6 +18,8 @@ func main() {
 
 func listFiles(dirname string) []string {
 	var dirs []string
+	var showHiddenFiles = flag.Bool("a", false, "player's points")
+	flag.Parse()
 
 	files, err := os.ReadDir(dirname)
 
@@ -25,7 +28,7 @@ func listFiles(dirname string) []string {
 	}
 
 	for _, f := range files {
-		if strings.HasPrefix(f.Name(), ".") {
+		if strings.HasPrefix(f.Name(), ".") && !*showHiddenFiles {
 			continue
 		}
 		dirs = append(dirs, f.Name())
