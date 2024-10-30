@@ -17,30 +17,18 @@ type tweetsList struct {
 	Tweets []Tweet `json:"tweets"`
 }
 
-func HandleTweets(w http.ResponseWriter, r *http.Request) {
-	payload := Tweet{}
-	body, err := io.ReadAll(r.Body)
+func (s Server) ListTweets(w http.ResponseWriter, r *http.Request) {
+	tweets, err := s.Repository.Tweets()
 	if err != nil {
-		log.Println("Failed to read body:", err)
-		w.WriteHeader(http.StatusBadRequest)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	defer r.Body.Close()
-
-	if err := json.Unmarshal(body, &payload); err != nil {
-		log.Println("Failed to unmarshal payload:", err)
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-	p, err := json.Marshal(struct {
-		ID int `json:"ID"`
-	}{ID: 1})
+	p, err := json.Marshal(tweetsList{Tweets: tweets})
 	if err != nil {
 		log.Println("Failed to marshal:", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	fmt.Printf("Tweet: `%s` from %s\n", payload.Message, payload.Location)
 	w.Write(p)
 }
 
@@ -50,22 +38,6 @@ func (s Server) AddTweet(w http.ResponseWriter, r *http.Request) {
 		duration := time.Since(start)
 		fmt.Printf("%s %s %s\n", r.Method, r.URL, duration)
 	}()
-	if r.Method == "GET" {
-		tweets, err := s.Repository.Tweets()
-
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-		p, err := json.Marshal(tweetsList{Tweets: tweets})
-		if err != nil {
-			log.Println("Failed to marshal:", err)
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-		w.Write(p)
-		return
-	}
 	payload := Tweet{}
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
