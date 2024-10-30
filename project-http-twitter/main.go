@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"time"
 )
 
 type tweetsList struct {
@@ -76,6 +77,11 @@ func handleTweets(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s server) addTweet(w http.ResponseWriter, r *http.Request) {
+	start := time.Now()
+	defer func() {
+		duration := time.Since(start)
+		fmt.Printf("%s %s %s\n", r.Method, r.URL, duration)
+	}()
 	if r.Method == "GET" {
 		tweets, err := s.repository.Tweets()
 
